@@ -27,7 +27,6 @@ export class SuggestComponent implements OnDestroy {
     }
     const findUsersSubscription = this.usersService.findUsers(query).subscribe({
       next: (users) => {
-        console.log({ query, users });
         this.users = users;
       },
     });
