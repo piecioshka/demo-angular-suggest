@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
-import { BehaviorSubject, debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
+import { Component, Signal } from '@angular/core';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
+import { FormControl } from "@angular/forms";
 
 import { UsersService } from '../services/users/users.service';
-import { User } from '../interfaces/user';
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { FormControl } from "@angular/forms";
+import { User } from "../interfaces/user";
 
 @Component({
   selector: 'app-suggest',
@@ -13,10 +13,10 @@ import { FormControl } from "@angular/forms";
 })
 export class SuggestComponent {
   searchInput = new FormControl();
-  users$ = new BehaviorSubject<User[]>([]);
+  users: Signal<User[]>;
 
   constructor(private usersService: UsersService) {
-    this.searchInput.valueChanges
+    const users$ = this.searchInput.valueChanges
       .pipe(
         filter(query => query.length > 0),
         debounceTime(300),
@@ -25,7 +25,10 @@ export class SuggestComponent {
           // switch to new search observable each time the term changes
           this.usersService.findUsers(query)),
         takeUntilDestroyed(), // ngOnDestroy not needed anymore
-      )
-      .subscribe(this.users$);
+      );
+
+    this.users = toSignal(users$,
+      { initialValue: []}
+    );
   }
 }
