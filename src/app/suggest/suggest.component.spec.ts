@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { SuggestComponent } from './suggest.component';
 
@@ -8,7 +10,8 @@ describe('SuggestComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [SuggestComponent]
+      declarations: [SuggestComponent],
+      imports: [HttpClientTestingModule, ReactiveFormsModule],
     });
     fixture = TestBed.createComponent(SuggestComponent);
     component = fixture.componentInstance;
