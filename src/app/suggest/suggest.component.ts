@@ -1,43 +1,34 @@
-import { Component, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, Signal } from '@angular/core';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
+import { FormControl } from "@angular/forms";
 
-import { debounce } from '../utils/debounce';
 import { UsersService } from '../services/users/users.service';
-import { User } from '../interfaces/user';
+import { User } from "../interfaces/user";
 
 @Component({
   selector: 'app-suggest',
   templateUrl: './suggest.component.html',
   styleUrls: ['./suggest.component.css'],
 })
-export class SuggestComponent implements OnDestroy {
-  users: User[] = [];
+export class SuggestComponent {
+  searchInput = new FormControl();
+  users: Signal<User[]>;
 
-  private subscriptions: Subscription[] = [];
+  constructor(private usersService: UsersService) {
+    const users$ = this.searchInput.valueChanges
+      .pipe(
+        filter(query => query.length > 0),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(query =>
+          // switch to new search observable each time the term changes
+          this.usersService.findUsers(query)),
+        takeUntilDestroyed(), // ngOnDestroy not needed anymore
+      );
 
-  constructor(private usersService: UsersService) {}
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
-  }
-
-  private async search(query: string) {
-    if (query.length === 0) {
-      return;
-    }
-    const findUsersSubscription = this.usersService.findUsers(query).subscribe({
-      next: (users) => {
-        this.users = users;
-      },
-    });
-
-    this.subscriptions.push(findUsersSubscription);
-  }
-
-  private debouncedSearch = debounce(this.search.bind(this), 500);
-
-  onChange(value: string) {
-    this.users = [];
-    this.debouncedSearch(value.trim());
+    this.users = toSignal(users$,
+      { initialValue: []}
+    );
   }
 }

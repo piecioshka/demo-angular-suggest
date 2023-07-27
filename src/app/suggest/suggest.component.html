@@ -2,15 +2,14 @@
   <label class="suggest-label">
     🔎
     <input
-      #query
       class="suggest-input"
       type="text"
       placeholder='Example "Brandon Crona"'
-      (input)="onChange(query.value)"
+      [formControl]="searchInput"
     />
   </label>
   <ul class="suggest-list">
-    <li class="suggest-item" *ngFor="let user of users">
+    <li class="suggest-item" *ngFor="let user of users()">
       <img src="{{ user.avatarUrl }}" class="user-avatar" alt="" />
       <span class="user-name">{{ user.name }}</span>
       <em class="user-email">{{ user.email }}</em>
