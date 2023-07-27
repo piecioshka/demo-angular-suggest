@@ -18,7 +18,7 @@ export class SuggestComponent {
   constructor(private usersService: UsersService) {
     const users$ = this.searchInput.valueChanges.pipe(
       filter((query) => query.length > 0),
-      debounceTime(300),
+      debounceTime(500),
       distinctUntilChanged(),
       switchMap((query) =>
         // switch to new search observable each time the term changes
